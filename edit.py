@@ -44,8 +44,9 @@ class ArchiveAr:
         return lasttime
 
     def main(self):
+        self.logger.info('start')
         if not self.cfg['enable']:
-            logging.warning('disabled')
+            self.logger.warning('disabled')
             return
 
         mainPage = pywikibot.Page(self.site, self.cfg['main_page_name'])
@@ -53,13 +54,13 @@ class ArchiveAr:
 
         text = re.sub(r'^(==[^=]+==)$', self.RANDOM_SEP + r'\1', text, flags=re.M)
         text = text.split(self.RANDOM_SEP)
-        self.logger.info('found %d sections', len(text) - 1)
+        self.logger.debug('found %d sections', len(text) - 1)
 
         mainPageText = text[0].strip()
 
         today = datetime.today()
         archivePagename = self.cfg['archive_page_name'].format(today.year, today.month)
-        self.logger.info('archive page: %s', archivePagename)
+        self.logger.debug('archive page: %s', archivePagename)
         archivePage = pywikibot.Page(self.site, archivePagename)
         archiveText = archivePage.text
         if not archiveText:
@@ -69,7 +70,7 @@ class ArchiveAr:
         for section in text[1:]:
             section = section.strip()
             title = section.split('\n')[0]
-            self.logger.info('run %s', title)
+            self.logger.debug('run %s', title)
             status_cnt = len(re.findall(r'{{\s*ARstatus\s*\|', section))
             done_cnt = len(re.findall(r'{{\s*ARstatus\s*\|(d|done|\+|完成|n|x|rejected|undone|-)\|', section))
             if status_cnt == 0:
@@ -122,6 +123,8 @@ class ArchiveAr:
             archivePage.save(summary=summary, minor=False)
         else:
             self.logger.debug('skip save')
+
+        self.logger.info('done')
 
 
 if __name__ == '__main__':
